@@ -1,8 +1,16 @@
 {
-  "buildCommand": "echo 'No build needed for static files'",
-  "outputDirectory": ".",
-  "installCommand": "echo 'No dependencies to install'",
-  "public": true,
-  "cleanUrls": true,
-  "trailingSlash": false
+  "version": 2,
+  "name": "markdown-lite-pwa",
+  "builds": [
+    {
+      "src": "**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
 }
