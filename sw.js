@@ -4,11 +4,11 @@ const DYNAMIC_CACHE = 'dynamic-v1';
 
 // アプリシェルのリソース（常にキャッシュする）
 const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
+  '/markdown-lite-pwa/',
+  '/markdown-lite-pwa/index.html',
+  '/markdown-lite-pwa/styles.css',
+  '/markdown-lite-pwa/app.js',
+  '/markdown-lite-pwa/manifest.json',
   'https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js'
 ];
 
