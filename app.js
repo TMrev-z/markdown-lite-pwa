@@ -49,6 +49,8 @@ class MarkdownLitePWA {
     this.files = [];
     this.unsavedChanges = false;
     this.autoSaveTimer = null;
+    this.sidebarVisible = true;
+    this.focusMode = false;
   }
 
   setupEventListeners() {
@@ -63,6 +65,16 @@ class MarkdownLitePWA {
     // 表示モード切り替え
     this.toEditBtn?.addEventListener('click', () => this.switchMode('edit'));
     this.toPreviewBtn?.addEventListener('click', () => this.switchMode('preview'));
+    
+    // UI制御
+    document.getElementById('toggleSidebar')?.addEventListener('click', () => this.toggleSidebar());
+    document.getElementById('toggleFocus')?.addEventListener('click', () => this.toggleFocusMode());
+    
+    // フォーカスモード用コントロール
+    document.getElementById('focusEdit')?.addEventListener('click', () => this.switchMode('edit'));
+    document.getElementById('focusPreview')?.addEventListener('click', () => this.switchMode('preview'));
+    document.getElementById('focusSave')?.addEventListener('click', () => this.saveFile());
+    document.getElementById('exitFocus')?.addEventListener('click', () => this.toggleFocusMode());
     
     // エディター
     this.editor?.addEventListener('input', () => this.onContentChange());
@@ -156,10 +168,12 @@ class MarkdownLitePWA {
     }
   }
 
-  // File System Access API を使用したフォルダ選択
+  // File System Access API を使用したフォルダ選択（フォールバック付き）
   async openFolder() {
     if (!('showDirectoryPicker' in window)) {
-      alert('お使いのブラウザはフォルダ選択機能をサポートしていません。Chromeまたは新しいEdgeをご利用ください。');
+      // フォールバック: webkitdirectory または複数ファイル選択
+      this.setStatus('📁 フォルダ選択機能を開始中...');
+      this.showFallbackFilePicker('folder');
       return;
     }
 
@@ -177,10 +191,11 @@ class MarkdownLitePWA {
     }
   }
 
-  // File System Access API を使用したファイル選択
+  // File System Access API を使用したファイル選択（フォールバック付き）
   async openFile() {
     if (!('showOpenFilePicker' in window)) {
-      alert('お使いのブラウザはファイル選択機能をサポートしていません。Chromeまたは新しいEdgeをご利用ください。');
+      // フォールバック: 従来のファイル選択
+      this.showFallbackFilePicker('file');
       return;
     }
 
@@ -286,7 +301,14 @@ class MarkdownLitePWA {
         const fileName = item.dataset.name;
         const file = this.files.find(f => f.name === fileName);
         if (file) {
-          this.loadFileFromHandle(file.handle);
+          // File System Access API対応時
+          if (file.handle) {
+            this.loadFileFromHandle(file.handle);
+          }
+          // フォールバック時
+          else if (file.fallbackFile) {
+            this.loadFallbackFile(file.fallbackFile);
+          }
         }
       });
     });
@@ -351,12 +373,18 @@ class MarkdownLitePWA {
       this.preview.classList.add('hidden');
       this.toEditBtn.classList.add('active');
       this.toPreviewBtn.classList.remove('active');
+      // フォーカスモード用ボタンも更新
+      document.getElementById('focusEdit')?.classList.add('active');
+      document.getElementById('focusPreview')?.classList.remove('active');
       this.editor.focus();
     } else {
       this.editor.classList.add('hidden');
       this.preview.classList.remove('hidden');
       this.toEditBtn.classList.remove('active');
       this.toPreviewBtn.classList.add('active');
+      // フォーカスモード用ボタンも更新
+      document.getElementById('focusEdit')?.classList.remove('active');
+      document.getElementById('focusPreview')?.classList.add('active');
       this.updatePreview();
     }
     
@@ -582,6 +610,198 @@ class MarkdownLitePWA {
       }
     } catch (error) {
       console.warn('状態読み込みに失敗:', error);
+    }
+  }
+
+  // フォールバック：従来のファイル選択機能
+  showFallbackFilePicker(type) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.style.display = 'none';
+    
+    if (type === 'folder') {
+      input.multiple = true;
+      input.accept = '.md,.markdown,.txt';
+      this.setStatus('📄 複数のMarkdownファイルを選択してください...');
+    } else {
+      input.accept = '.md,.markdown,.txt';
+      input.multiple = false;
+      this.setStatus('📄 Markdownファイルを選択してください...');
+    }
+    
+    input.onchange = (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length > 0) {
+        if (type === 'folder') {
+          this.loadFallbackFiles(files);
+        } else {
+          this.loadFallbackFile(files[0]);
+        }
+      }
+      document.body.removeChild(input);
+    };
+    
+    document.body.appendChild(input);
+    input.click();
+  }
+
+  // フォールバック：複数ファイルの読み込み
+  async loadFallbackFiles(files) {
+    this.files = [];
+    const markdownFiles = files.filter(file => 
+      file.name.endsWith('.md') || file.name.endsWith('.markdown') || file.name.endsWith('.txt')
+    );
+
+    this.setStatus(`📂 ${markdownFiles.length}個のファイルを読み込み中...`);
+    
+    for (const file of markdownFiles) {
+      const fileInfo = {
+        name: file.name,
+        handle: null, // フォールバックでは保存不可
+        lastModified: file.lastModified,
+        fallbackFile: file // フォールバック用
+      };
+      this.files.push(fileInfo);
+    }
+
+    this.folderPath.textContent = `選択されたファイル (${markdownFiles.length}個)`;
+    this.displayFiles();
+    this.setStatus(`📂 ${markdownFiles.length}個のファイルを読み込みました`);
+    
+    if (markdownFiles.length > 0) {
+      await this.loadFallbackFile(markdownFiles[0]);
+    }
+  }
+
+  // フォールバック：単一ファイルの読み込み
+  async loadFallbackFile(file) {
+    try {
+      const text = await this.readFileAsText(file);
+      this.currentFile = {
+        name: file.name,
+        handle: null, // 保存不可
+        fallbackFile: file
+      };
+      
+      this.fileTitle.value = file.name.replace(/\.(md|markdown|txt)$/, '');
+      this.editor.value = text;
+      this.updatePreview();
+      this.setStatus(`📄 ${file.name} を開きました（読み取り専用）`);
+      
+      this.unsavedChanges = false;
+      this.updateFileInfo();
+    } catch (error) {
+      console.error('ファイル読み込みエラー:', error);
+      this.setStatus('❌ ファイルの読み込みに失敗しました');
+    }
+  }
+
+  // File を文字列として読み込む
+  readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = (e) => reject(e);
+      reader.readAsText(file, 'UTF-8');
+    });
+  }
+
+  // ファイル一覧表示（フォールバック対応）
+  displayFiles() {
+    const searchTerm = this.search.value.toLowerCase();
+    const sortKey = this.sortKey.value;
+    const sortDir = this.sortDir.value;
+
+    // フィルタリング
+    let filteredFiles = this.files.filter(file => 
+      file.name.toLowerCase().includes(searchTerm)
+    );
+
+    // ソート
+    filteredFiles.sort((a, b) => {
+      let aVal, bVal;
+      if (sortKey === 'name') {
+        aVal = a.name.toLowerCase();
+        bVal = b.name.toLowerCase();
+      } else {
+        aVal = a.lastModified || 0;
+        bVal = b.lastModified || 0;
+      }
+      
+      const result = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      return sortDir === 'asc' ? result : -result;
+    });
+
+    if (filteredFiles.length === 0) {
+      this.fileList.innerHTML = `
+        <div class="empty-state">
+          <h3>📄 Markdownファイルがありません</h3>
+          <p>「新規」ボタンでファイルを作成するか、.mdファイルをフォルダに追加してください</p>
+        </div>
+      `;
+      return;
+    }
+
+    this.fileList.innerHTML = filteredFiles.map(file => {
+      const isActive = this.currentFile && this.currentFile.name === file.name;
+      const lastModified = file.lastModified ? 
+        new Date(file.lastModified).toLocaleDateString('ja-JP') : '不明';
+      
+      return `
+        <div class="file-item ${isActive ? 'active' : ''}" data-name="${file.name}">
+          <span class="file-icon">📄</span>
+          <span class="file-name">${file.name}</span>
+          <span class="file-date">${lastModified}</span>
+        </div>
+      `;
+    }).join('');
+
+    // ファイル項目にクリックイベントを追加（フォールバック対応）
+    this.fileList.querySelectorAll('.file-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const fileName = item.dataset.name;
+        const file = this.files.find(f => f.name === fileName);
+        if (file) {
+          if (file.handle) {
+            // File System Access API
+            this.loadFileFromHandle(file.handle);
+          } else if (file.fallbackFile) {
+            // フォールバック
+            this.loadFallbackFile(file.fallbackFile);
+          }
+        }
+      });
+    });
+  }
+
+  // サイドバー表示切替
+  toggleSidebar() {
+    this.sidebarVisible = !this.sidebarVisible;
+    const layout = document.querySelector('.layout');
+    
+    if (this.sidebarVisible) {
+      layout.classList.remove('sidebar-hidden');
+      this.setStatus('📂 サイドバーを表示しました');
+    } else {
+      layout.classList.add('sidebar-hidden');
+      this.setStatus('📂 サイドバーを非表示にしました');
+    }
+  }
+
+  // フォーカスモード切替
+  toggleFocusMode() {
+    this.focusMode = !this.focusMode;
+    const layout = document.querySelector('.layout');
+    const body = document.body;
+    
+    if (this.focusMode) {
+      layout.classList.add('focus-mode');
+      body.classList.add('focus-mode');
+      this.setStatus('🔍 フォーカスモードを開始しました');
+    } else {
+      layout.classList.remove('focus-mode');
+      body.classList.remove('focus-mode');
+      this.setStatus('🔍 フォーカスモードを終了しました');
     }
   }
 }

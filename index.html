@@ -9,8 +9,10 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#007acc">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="MarkdownLite">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="MarkdownLite">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   
   <!-- スタイルシート -->
@@ -21,9 +23,8 @@
 </head>
 <body class="light">
   <header class="bar">
-    <button id="openFolder" class="btn primary">フォルダを開く</button>
-    <button id="openFile" class="btn">ファイルを開く</button>
-    <button id="refreshBtn" class="btn" title="ファイル一覧を更新">🔄</button>
+    <button id="toggleSidebar" class="btn" title="サイドバー表示切替">📂</button>
+    <button id="toggleFocus" class="btn" title="フォーカスモード切替">🔍</button>
     <div class="seg">
       <button id="toEdit" class="seg-btn">編集</button>
       <button id="toPreview" class="seg-btn active">プレビュー</button>
@@ -34,7 +35,9 @@
       <option value="1.45">やや広い</option>
       <option value="1.60">広い</option>
     </select>
-    <div class="spacer"></div>
+    <button id="openFolder" class="btn primary">複数ファイルを選択</button>
+    <button id="openFile" class="btn">ファイルを開く</button>
+    <button id="refreshBtn" class="btn" title="ファイル一覧を更新">🔄</button>
     <button id="newBtn" class="btn">新規</button>
     <button id="saveBtn" class="btn primary">保存</button>
     <button id="saveAsBtn" class="btn">名前をつけて保存</button>
@@ -63,7 +66,7 @@
       <div id="fileList" class="file-list">
         <div class="empty-state">
           <h3>📁 ファイルを開いて始めましょう</h3>
-          <p>「フォルダを開く」または「ファイルを開く」ボタンをクリックしてください</p>
+          <p>「複数ファイルを選択」または「ファイルを開く」ボタンをクリックしてください</p>
           <div class="feature-list">
             <h4>PWA版の特徴:</h4>
             <ul>
@@ -78,6 +81,14 @@
     </aside>
 
     <section class="content">
+      <!-- フォーカスモード用コントロール -->
+      <div class="focus-controls">
+        <button id="focusEdit" class="focus-btn">編集</button>
+        <button id="focusPreview" class="focus-btn active">プレビュー</button>
+        <button id="focusSave" class="focus-btn save-btn">保存</button>
+        <button id="exitFocus" class="focus-btn close-btn">×</button>
+      </div>
+      
       <input id="fileTitle" placeholder="無題のドキュメント">
       <textarea id="editor" class="hidden" spellcheck="false" placeholder="# ここにMarkdownを入力してください
 
@@ -109,7 +120,7 @@ console.log('Hello, Markdown!');
           <div class="quick-start">
             <h2>🎯 クイックスタート</h2>
             <ol>
-              <li><strong>フォルダを開く</strong>: Google Driveのフォルダを選択</li>
+              <li><strong>複数ファイルを選択</strong>: Markdownファイルを複数選択</li>
               <li><strong>ファイルを開く</strong>: 既存の.mdファイルを編集</li>
               <li><strong>新規作成</strong>: 新しいMarkdownファイルを作成</li>
             </ol>

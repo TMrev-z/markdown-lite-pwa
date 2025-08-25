@@ -519,6 +519,202 @@ body{margin:0;background:#fff;color:#111;font:14px/var(--line) -apple-system,sys
   }
 }
 
+/* サイドバー制御 */
+.layout.sidebar-hidden .side {
+  display: none;
+}
+
+/* フォーカスモード */
+.layout.focus-mode .bar,
+.layout.focus-mode .path,
+.layout.focus-mode .status {
+  display: none;
+}
+
+.layout.focus-mode {
+  height: 100vh;
+}
+
+.layout.focus-mode .content {
+  position: relative;
+  height: 100vh;
+}
+
+/* フォーカスモード時はbody全体のスタイルを変更 */
+body.focus-mode {
+  background: #fff;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+}
+
+body.focus-mode * {
+  border-color: transparent !important;
+  outline: none !important;
+}
+
+/* フォーカスモード時の例外的な境界線復活 */
+body.focus-mode .focus-controls {
+  border: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+body.focus-mode .focus-btn {
+  border: 1px solid #e1e5e9 !important;
+}
+
+body.focus-mode .focus-btn.active {
+  border-color: #0056b3 !important;
+}
+
+body.focus-mode .focus-btn.save-btn {
+  border-color: #1e7e34 !important;
+}
+
+body.focus-mode .focus-btn.close-btn {
+  border-color: #c82333 !important;
+}
+
+body.focus-mode #fileTitle {
+  border: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+.layout.focus-mode #fileTitle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  max-width: calc(100% - 260px);
+  z-index: 200;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  backdrop-filter: blur(10px);
+}
+
+.layout.focus-mode #editor {
+  padding-top: 50px;
+}
+
+.layout.focus-mode #preview {
+  padding-top: 50px;
+}
+
+/* フォーカスモード用の簡易コントロール */
+.focus-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: none;
+  gap: 6px;
+  z-index: 200;
+  background: rgba(255,255,255,0.95);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.layout.focus-mode .focus-controls {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 240px;
+}
+
+.focus-btn {
+  background: #f8f9fa;
+  border: 1px solid #e1e5e9;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: 40px;
+  text-align: center;
+}
+
+.focus-btn:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.focus-btn.active {
+  background: #007acc;
+  color: white;
+  border-color: #0056b3;
+}
+
+.focus-btn.save-btn {
+  background: #28a745;
+  color: white;
+  border-color: #1e7e34;
+}
+
+.focus-btn.save-btn:hover {
+  background: #218838;
+}
+
+.focus-btn.close-btn {
+  background: #dc3545;
+  color: white;
+  border-color: #c82333;
+  padding: 4px 6px;
+}
+
+.focus-btn.close-btn:hover {
+  background: #c82333;
+}
+
+/* UI改善 */
+.bar {
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+}
+
+.bar .btn {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.bar .seg {
+  order: 1;
+}
+
+.bar .spacer {
+  display: none;
+}
+
+/* レスポンシブ改善 */
+@media (max-width: 768px) {
+  .bar {
+    padding: 6px;
+    gap: 4px;
+  }
+  
+  .bar .btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  .layout {
+    flex-direction: column;
+  }
+  
+  .side {
+    height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .content {
+    height: 60vh;
+  }
+}
+
 /* ダークモード対応（将来実装） */
 @media (prefers-color-scheme: dark){
   /* ダークモード用のスタイルは将来実装 */
