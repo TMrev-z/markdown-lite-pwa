@@ -527,7 +527,8 @@ body{margin:0;background:#fff;color:#111;font:14px/var(--line) -apple-system,sys
 /* フォーカスモード */
 .layout.focus-mode .bar,
 .layout.focus-mode .path,
-.layout.focus-mode .status {
+.layout.focus-mode .status,
+.layout.focus-mode .side {
   display: none;
 }
 
@@ -538,6 +539,8 @@ body{margin:0;background:#fff;color:#111;font:14px/var(--line) -apple-system,sys
 .layout.focus-mode .content {
   position: relative;
   height: 100vh;
+  width: 100%;
+  flex: 1;
 }
 
 /* フォーカスモード時はbody全体のスタイルを変更 */
