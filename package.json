@@ -1,0 +1,35 @@
+{
+  "name": "markdown-lite-pwa",
+  "version": "1.0.0",
+  "description": "A lightweight Markdown editor with live preview - PWA version for iOS/Android/Web",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080",
+    "serve": "python3 -m http.server 8080",
+    "build": "echo 'Static site - no build needed'"
+  },
+  "keywords": [
+    "markdown",
+    "editor",
+    "pwa",
+    "progressive-web-app",
+    "ios",
+    "android",
+    "file-system-access-api"
+  ],
+  "author": "Cocoroai Inc.",
+  "license": "MIT",
+  "dependencies": {
+    "marked": "^12.0.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TMrev-z/markdown-lite-pwa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TMrev-z/markdown-lite-pwa/issues"
+  },
+  "homepage": "https://github.com/TMrev-z/markdown-lite-pwa#readme"
+}
