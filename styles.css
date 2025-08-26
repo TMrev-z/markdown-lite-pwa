@@ -524,11 +524,10 @@ body{margin:0;background:#fff;color:#111;font:14px/var(--line) -apple-system,sys
   display: none;
 }
 
-/* フォーカスモード */
+/* フォーカスモード（コンテンツエリアのみフルスクリーン） */
 .layout.focus-mode .bar,
 .layout.focus-mode .path,
-.layout.focus-mode .status,
-.layout.focus-mode .side {
+.layout.focus-mode .status {
   display: none;
 }
 
@@ -537,10 +536,19 @@ body{margin:0;background:#fff;color:#111;font:14px/var(--line) -apple-system,sys
 }
 
 .layout.focus-mode .content {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
   height: 100vh;
-  width: 100%;
-  flex: 1;
+  background: white;
+  z-index: 1000;
+}
+
+.layout.focus-mode .side {
+  display: none;
 }
 
 /* フォーカスモード時はbody全体のスタイルを変更 */
@@ -584,59 +592,66 @@ body.focus-mode #fileTitle {
 
 .layout.focus-mode #fileTitle {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  max-width: calc(100% - 260px);
-  z-index: 200;
+  top: 15px;
+  left: 15px;
+  max-width: calc(100vw - 280px);
+  z-index: 1001;
   background: rgba(255,255,255,0.95);
   border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 11px;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
   backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .layout.focus-mode #editor {
-  padding-top: 50px;
+  padding: 60px 20px 20px 20px;
+  height: 100vh;
+  box-sizing: border-box;
 }
 
 .layout.focus-mode #preview {
-  padding-top: 50px;
+  padding: 60px 20px 20px 20px;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 /* フォーカスモード用の簡易コントロール */
 .focus-controls {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 15px;
+  right: 15px;
   display: none;
-  gap: 6px;
-  z-index: 200;
+  gap: 8px;
+  z-index: 1001;
   background: rgba(255,255,255,0.95);
-  border-radius: 8px;
-  padding: 8px;
-  box-shadow: 0 2px 15px rgba(0,0,0,0.15);
-  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  backdrop-filter: blur(15px);
   border: 1px solid rgba(0,0,0,0.1);
 }
 
 .layout.focus-mode .focus-controls {
   display: flex;
   flex-wrap: wrap;
-  max-width: 240px;
+  max-width: 260px;
 }
 
 .focus-btn {
   background: #f8f9fa;
   border: 1px solid #e1e5e9;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 11px;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
-  min-width: 40px;
+  min-width: 50px;
   text-align: center;
+  font-weight: 500;
 }
 
 .focus-btn:hover {
